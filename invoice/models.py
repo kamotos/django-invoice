@@ -4,7 +4,8 @@ from StringIO import StringIO
 from email.mime.application import MIMEApplication
 
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import SiteProfileNotAvailable
 from django.conf import settings
 from django_extensions.db.models import TimeStampedModel
 from django.template.loader import render_to_string
@@ -14,6 +15,8 @@ from addressbook.models import Address
 from .utils import format_currency, friendly_id
 from .conf import settings as app_settings
 from .pdf import draw_pdf
+
+User = get_user_model()
 
 
 class Currency(models.Model):
@@ -59,7 +62,10 @@ class Invoice(TimeStampedModel):
             self.address
         except Address.DoesNotExist:
             try:
-                self.address = self.user.get_profile().address
+                if hasattr(settings, 'AUTH_PROFILE_MODEL'):
+                    self.address = self.user.get_profile().address
+                else:
+                    self.address = self.user.address
             except User.DoesNotExist:
                 pass
 

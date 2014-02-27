@@ -64,6 +64,7 @@ inv_module = importlib.import_module(settings.INV_MODULE)
 header_func = inv_module.draw_header
 address_func = inv_module.draw_address
 footer_func = inv_module.draw_footer
+y_offset = getattr(inv_module, 'y_offset', 0)
 
 
 def draw_pdf(buffer, invoice):
@@ -85,7 +86,7 @@ def draw_pdf(buffer, invoice):
     canvas.restoreState()
 
     # Client address
-    textobject = canvas.beginText(1.5 * cm, -2.5 * cm)
+    textobject = canvas.beginText(1.5 * cm, (y_offset-2.5) * cm)
     if invoice.address.contact_name:
         textobject.textLine(invoice.address.contact_name)
     textobject.textLine(invoice.address.address_one)
@@ -99,7 +100,7 @@ def draw_pdf(buffer, invoice):
     canvas.drawText(textobject)
 
     # Info
-    textobject = canvas.beginText(1.5 * cm, -6.75 * cm)
+    textobject = canvas.beginText(1.5 * cm, (y_offset-6.75) * cm)
     textobject.textLine(u'Invoice ID: %s' % invoice.invoice_id)
     textobject.textLine(u'Invoice Date: %s' % invoice.invoice_date.strftime('%d %b %Y'))
     textobject.textLine(u'Client: %s' % invoice.user.username)
@@ -126,7 +127,7 @@ def draw_pdf(buffer, invoice):
         ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),
     ])
     tw, th, = table.wrapOn(canvas, 15 * cm, 19 * cm)
-    table.drawOn(canvas, 1 * cm, -8 * cm - th)
+    table.drawOn(canvas, 1 * cm, (y_offset-8) * cm - th)
 
     canvas.showPage()
     canvas.save()

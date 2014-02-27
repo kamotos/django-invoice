@@ -32,8 +32,9 @@ Add it to your `INSTALLED_APPS` setting.
         'addressbook',
     )
 
-Create user profile model with an addresses foreign key to Address. I normally
-put this in an account app. Don't forget to add it to your `INSTALLED_APPS`.
+Create user profile model or a custom user model with an addresses foreign 
+key to Address. I normally put this in an account app. Don't forget to add 
+it to your `INSTALLED_APPS`.
 
     from django.db import models
     from django.contrib.auth.models import User
@@ -125,7 +126,6 @@ Here is a list of things that need to be improved. If you wish to help please
 submit a pull request or open an issue. It is a small project so should be
 easy to picked up.
 
-* Remove the need for a user profile.
 * Recurring invoice support.
 * Replace current invoice customization with something new.
 * Improve documentation.

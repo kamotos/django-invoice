@@ -1,10 +1,12 @@
 import datetime
 
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from addressbook.models import Address, Country
 
 from .models import Invoice
+
+User = get_user_model()
 
 
 class InvoiceTestCase(TestCase):
