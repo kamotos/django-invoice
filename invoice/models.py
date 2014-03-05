@@ -5,7 +5,6 @@ from email.mime.application import MIMEApplication
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import SiteProfileNotAvailable
 from django.conf import settings
 from django_extensions.db.models import TimeStampedModel
 from django.template.loader import render_to_string

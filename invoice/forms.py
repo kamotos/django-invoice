@@ -24,7 +24,7 @@ class InvoiceAdminForm(forms.ModelForm):
             if not address and user:
                 address_pk = get_profile(User.objects.get(pk=user)).address.pk
                 args[0]['address'] = address_pk
-        except (IndexError, Address.DoesNotExist, ObjectDoesNotExist):
+        except (IndexError, ObjectDoesNotExist):
             pass
 
         super(InvoiceAdminForm, self).__init__(*args, **kwargs)
