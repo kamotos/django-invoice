@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
 from datetime import date
+from django.utils.encoding import python_2_unicode_compatible
 from decimal import Decimal
-from StringIO import StringIO
 from email.mime.application import MIMEApplication
+import six
 
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -18,12 +20,13 @@ from .pdf import draw_pdf
 User = get_user_model()
 
 
+@python_2_unicode_compatible
 class Currency(models.Model):
     code = models.CharField(unique=True, max_length=3)
     pre_symbol = models.CharField(blank=True, max_length=1)
     post_symbol = models.CharField(blank=True, max_length=1)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
 
@@ -37,6 +40,7 @@ class InvoiceManager(models.Manager):
                            draft=False)
 
 
+@python_2_unicode_compatible
 class Invoice(TimeStampedModel):
     user = models.ForeignKey(User)
     currency = models.ForeignKey(Currency, blank=True, null=True)
@@ -50,7 +54,7 @@ class Invoice(TimeStampedModel):
 
     objects = InvoiceManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.invoice_id, self.total_amount())
 
     class Meta:
@@ -88,7 +92,7 @@ class Invoice(TimeStampedModel):
         return u'Invoice %s.pdf' % self.invoice_id
 
     def send_invoice(self):
-        pdf = StringIO()
+        pdf = six.StringIO()
         draw_pdf(pdf, self)
         pdf.seek(0)
 
@@ -113,6 +117,7 @@ class Invoice(TimeStampedModel):
         self.save()
 
 
+@python_2_unicode_compatible
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, related_name='items', unique=False)
     description = models.CharField(max_length=100)
@@ -123,5 +128,5 @@ class InvoiceItem(models.Model):
         total = Decimal(str(self.unit_price * self.quantity))
         return total.quantize(Decimal('0.01'))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.description

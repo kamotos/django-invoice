@@ -62,7 +62,7 @@ setup(
     packages=get_packages('invoice'),
     package_data=get_package_data('invoice'),
     test_suite='runtests.runtests',
-    install_requires=['django-addresses', 'django-extensions', 'reportlab'],
+    install_requires=['django-addresses', 'django-extensions', 'reportlab', 'six'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

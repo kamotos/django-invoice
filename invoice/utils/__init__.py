@@ -22,4 +22,4 @@ def send_invoices():
     from ..models import Invoice
 
     for invoice in Invoice.objects.get_due():
-        invoice.send_email()
+        invoice.send_invoice()
