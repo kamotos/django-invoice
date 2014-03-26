@@ -12,6 +12,23 @@ from invoice.conf import settings
 from invoice.utils import format_currency
 
 
+BUSINESS_DETAILS = (
+    u'COMPANY NAME LTD',
+    u'STREET',
+    u'TOWN',
+    U'COUNTY',
+    U'POSTCODE',
+    U'COUNTRY',
+    u'',
+    u'',
+    u'Phone: +00 (0) 000 000 000',
+    u'Email: example@example.com',
+    u'Website: www.example.com',
+    u'Reg No: 00000000'
+)
+
+inv_module = importlib.import_module(settings.INV_MODULE)
+
 def draw_header(canvas):
     """ Draws the invoice header """
     canvas.setStrokeColorRGB(0.9, 0.5, 0.2)
@@ -25,45 +42,30 @@ def draw_header(canvas):
 
 def draw_address(canvas):
     """ Draws the business address """
-    business_details = (
-        u'COMPANY NAME LTD',
-        u'STREET',
-        u'TOWN',
-        U'COUNTY',
-        U'POSTCODE',
-        U'COUNTRY',
-        u'',
-        u'',
-        u'Phone: +00 (0) 000 000 000',
-        u'Email: example@example.com',
-        u'Website: www.example.com',
-        u'Reg No: 00000000'
-    )
     canvas.setFont('Helvetica', 9)
     textobject = canvas.beginText(13 * cm, -2.5 * cm)
-    for line in business_details:
+    for line in getattr(inv_module, 'BUSINESS_DETAILS', BUSINESS_DETAILS):
         textobject.textLine(line)
     canvas.drawText(textobject)
 
 
 def draw_footer(canvas):
     """ Draws the invoice footer """
-    note = (
+    FOOTER_NOTE = (
         u'Bank Details: Street address, Town, County, POSTCODE',
         u'Sort Code: 00-00-00 Account No: 00000000 (Quote invoice number).',
         u'Please pay via bank transfer or cheque. All payments should be made in CURRENCY.',
         u'Make cheques payable to Company Name Ltd.',
     )
     textobject = canvas.beginText(1 * cm, -27 * cm)
-    for line in note:
+    for line in getattr(inv_module, 'FOOTER_NOTE', FOOTER_NOTE):
         textobject.textLine(line)
     canvas.drawText(textobject)
 
 
-inv_module = importlib.import_module(settings.INV_MODULE)
-header_func = inv_module.draw_header
-address_func = inv_module.draw_address
-footer_func = inv_module.draw_footer
+header_func = getattr(inv_module, 'draw_header', draw_header)
+address_func = getattr(inv_module, 'draw_address', draw_address)
+footer_func = getattr(inv_module, 'draw_footer', draw_footer)
 y_offset = getattr(inv_module, 'y_offset', 0)
 
 

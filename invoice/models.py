@@ -92,14 +92,7 @@ class Invoice(TimeStampedModel):
         return u'Invoice %s.pdf' % self.invoice_id
 
     def send_invoice(self):
-        pdf = six.StringIO()
-        draw_pdf(pdf, self)
-        pdf.seek(0)
-
-        attachment = MIMEApplication(pdf.read())
-        attachment.add_header("Content-Disposition", "attachment",
-                              filename=self.file_name())
-        pdf.close()
+        attachment = self.get_attachment()
 
         subject = app_settings.INV_EMAIL_SUBJECT % {"invoice_id": self.invoice_id}
         email = EmailMessage(subject=subject, to=[self.user.email])
@@ -115,6 +108,17 @@ class Invoice(TimeStampedModel):
 
         self.invoiced = True
         self.save()
+
+    def get_attachment(self):
+        pdf = six.StringIO()
+        draw_pdf(pdf, self)
+        pdf.seek(0)
+
+        attachment = MIMEApplication(pdf.read())
+        attachment.add_header("Content-Disposition", "attachment",
+                              filename=self.file_name())
+        pdf.close()
+        return attachment
 
 
 @python_2_unicode_compatible
