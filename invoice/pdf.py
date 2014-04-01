@@ -27,14 +27,18 @@ BUSINESS_DETAILS = (
     u'Reg No: 00000000'
 )
 
+INVOICE_HEADER_TEXT = "Invoice"
+
 inv_module = importlib.import_module(settings.INV_MODULE)
+
+invoice_header_text = getattr(inv_module, 'INVOICE_HEADER_TEXT', INVOICE_HEADER_TEXT)
 
 def draw_header(canvas):
     """ Draws the invoice header """
     canvas.setStrokeColorRGB(0.9, 0.5, 0.2)
     canvas.setFillColorRGB(0.2, 0.2, 0.2)
     canvas.setFont('Helvetica', 16)
-    canvas.drawString(18 * cm, -1 * cm, 'Invoice')
+    canvas.drawString(18 * cm, -1 * cm, invoice_header_text)
     canvas.drawInlineImage(settings.INV_LOGO, 1 * cm, -1 * cm, 250, 16)
     canvas.setLineWidth(4)
     canvas.line(0, -1.25 * cm, 21.7 * cm, -1.25 * cm)
@@ -63,11 +67,30 @@ def draw_footer(canvas):
     canvas.drawText(textobject)
 
 
+def get_table_kwargs(invoice):
+    data = [[u'Quantity', u'Description', u'Amount', u'Total'], ]
+    for item in invoice.items.all():
+        data.append([
+            item.quantity,
+            item.description,
+            format_currency(item.unit_price, invoice.currency),
+            format_currency(item.total(), invoice.currency)
+        ])
+    data.append([u'', u'', u'Total:', format_currency(invoice.total(), invoice.currency)])
+    col_widths = [2 * cm, 11 * cm, 3 * cm, 3 * cm]
+    return {'data' : data, 'colWidths': col_widths}
+
+
+def get_client_name_text(invoice):
+    return u'Client: %s' % invoice.user.username
+
+
 header_func = getattr(inv_module, 'draw_header', draw_header)
 address_func = getattr(inv_module, 'draw_address', draw_address)
 footer_func = getattr(inv_module, 'draw_footer', draw_footer)
 y_offset = getattr(inv_module, 'y_offset', 0)
-
+table_kwargs_func = getattr(inv_module, 'get_table_kwargs', get_table_kwargs)
+client_name_text_func = getattr(inv_module, 'get_client_name_text', get_client_name_text)
 
 def draw_pdf(buffer, invoice):
     """ Draws the invoice """
@@ -103,22 +126,17 @@ def draw_pdf(buffer, invoice):
 
     # Info
     textobject = canvas.beginText(1.5 * cm, (y_offset-6.75) * cm)
-    textobject.textLine(u'Invoice ID: %s' % invoice.invoice_id)
-    textobject.textLine(u'Invoice Date: %s' % invoice.invoice_date.strftime('%d %b %Y'))
-    textobject.textLine(u'Client: %s' % invoice.user.username)
+    textobject.textLine(
+        u'%s ID: %s' % (invoice_header_text, invoice.invoice_id)
+    )
+    textobject.textLine(
+        u'%s Date: %s' % (invoice_header_text, invoice.invoice_date.strftime('%d %b %Y'))
+    )
+    textobject.textLine(client_name_text_func(invoice))
     canvas.drawText(textobject)
 
     # Items
-    data = [[u'Quantity', u'Description', u'Amount', u'Total'], ]
-    for item in invoice.items.all():
-        data.append([
-            item.quantity,
-            item.description,
-            format_currency(item.unit_price, invoice.currency),
-            format_currency(item.total(), invoice.currency)
-        ])
-    data.append([u'', u'', u'Total:', format_currency(invoice.total(), invoice.currency)])
-    table = Table(data, colWidths=[2 * cm, 11 * cm, 3 * cm, 3 * cm])
+    table = Table(**table_kwargs_func(invoice))
     table.setStyle([
         ('FONT', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),

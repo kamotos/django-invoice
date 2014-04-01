@@ -89,7 +89,7 @@ class Invoice(TimeStampedModel):
         return total
 
     def file_name(self):
-        return u'Invoice %s.pdf' % self.invoice_id
+        return u'Receipt %s.pdf' % self.invoice_id
 
     def send_invoice(self):
         attachment = self.get_attachment()
